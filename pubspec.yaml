@@ -1,0 +1,35 @@
+name: satay_master_pro
+description: "SatayGo - Premium Satay Ordering App"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^3.3.1
+
+  firebase_core: ^3.15.2
+  cloud_firestore: ^5.6.12
+  firebase_auth: ^5.7.0
+  firebase_storage: ^12.4.10
+
+  shared_preferences: ^2.2.3
+  google_fonts: ^8.1.0
+  intl: ^0.19.0
+  connectivity_plus: ^6.0.3
+
+  google_nav_bar: ^5.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

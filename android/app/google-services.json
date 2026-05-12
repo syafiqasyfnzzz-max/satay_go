@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "338038423866",
+    "project_id": "sataygo-app",
+    "storage_bucket": "sataygo-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:338038423866:android:6f4373d8c59f81569b5003",
+        "android_client_info": {
+          "package_name": "com.sataymaster.satay_master_pro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_jMNCyrupVwhWj0BIhOXYIIbuzD0wnSc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
