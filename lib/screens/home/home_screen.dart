@@ -17,6 +17,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   String selectedCategory = "All";
+  String searchQuery = "";
+  bool isSearching = false; // To toggle search mode
 
   @override
   Widget build(BuildContext context) {
@@ -33,9 +35,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const _SectionHeader(title: "Freshly Grilled for You 🔥"),
           menuAsync.when(
             data: (items) {
-              final filteredItems = selectedCategory == "All"
-                  ? items
-                  : items.where((i) => i.category == selectedCategory).toList();
+              // Updated filtering logic to include searchQuery
+              final filteredItems = items.where((i) {
+                final matchesCategory = selectedCategory == "All" || i.category == selectedCategory;
+                final matchesSearch = i.name.toLowerCase().contains(searchQuery.toLowerCase());
+                return matchesCategory && matchesSearch;
+              }).toList();
 
               return SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -47,7 +52,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     mainAxisExtent: 450,
                   ),
                   delegate: SliverChildBuilderDelegate(
-                    (context, index) {
+                        (context, index) {
                       return _ProductCard(item: filteredItems[index]);
                     },
                     childCount: filteredItems.length,
@@ -69,16 +74,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       floatingActionButton: cart.isNotEmpty
           ? FloatingActionButton.extended(
-              backgroundColor: Colors.deepOrange,
-              onPressed: () => _showCartSheet(context),
-              label: Text(
-                "View Cart (${cart.length}) • RM ${ref.read(cartProvider.notifier).subtotal.toStringAsFixed(2)}",
-              ),
-              icon: const Icon(
-                Icons.shopping_bag_outlined,
-                color: Colors.white,
-              ),
-            )
+        backgroundColor: Colors.deepOrange,
+        onPressed: () => _showCartSheet(context),
+        label: Text(
+          "View Cart (${cart.length}) • RM ${ref.read(cartProvider.notifier).subtotal.toStringAsFixed(2)}",
+        ),
+        icon: const Icon(
+          Icons.shopping_bag_outlined,
+          color: Colors.white,
+        ),
+      )
           : null,
     );
   }
@@ -92,7 +97,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       expandedHeight: 80,
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.white,
-      title: const Text(
+      title: isSearching
+          ? TextField(
+        autofocus: true,
+        style: const TextStyle(color: Colors.black87),
+        decoration: const InputDecoration(
+          hintText: "Search your favorite satay...",
+          border: InputBorder.none,
+          hintStyle: TextStyle(color: Colors.grey),
+        ),
+        onChanged: (value) {
+          setState(() {
+            searchQuery = value;
+          });
+        },
+      )
+          : const Text(
         "SatayGo 🔥",
         style: TextStyle(
           fontWeight: FontWeight.w900,
@@ -101,8 +121,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       actions: [
         IconButton(
-          onPressed: () {},
-          icon: const Icon(Icons.search, color: Colors.black87),
+          onPressed: () {
+            setState(() {
+              isSearching = !isSearching;
+              if (!isSearching) {
+                searchQuery = ""; // Clear search when closing
+              }
+            });
+          },
+          icon: Icon(
+            isSearching ? Icons.close : Icons.search,
+            color: Colors.black87,
+          ),
         ),
         IconButton(
           onPressed: () {
@@ -161,7 +191,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 borderRadius: BorderRadius.circular(18),
                 side: BorderSide(
                   color:
-                      isSelected ? Colors.deepOrange : Colors.orange.shade100,
+                  isSelected ? Colors.deepOrange : Colors.orange.shade100,
                 ),
               ),
               label: Center(
@@ -199,6 +229,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 }
+
+// ... Rest of the original code (SectionHeader, ProductCard, HeroBanner, CartBottomSheet, etc.) remains exactly the same
 
 class _SectionHeader extends StatelessWidget {
   final String title;
