@@ -17,7 +17,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   String selectedCategory = "All";
-  String searchQuery = "";
+  String searchQuery = "";//Search function
   bool isSearching = false;
 
   @override
