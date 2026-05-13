@@ -18,7 +18,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   String selectedCategory = "All";
   String searchQuery = "";
-  bool isSearching = false; // To toggle search mode
+  bool isSearching = false;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +35,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const _SectionHeader(title: "Freshly Grilled for You 🔥"),
           menuAsync.when(
             data: (items) {
-              // Updated filtering logic to include searchQuery
+
               final filteredItems = items.where((i) {
                 final matchesCategory = selectedCategory == "All" || i.category == selectedCategory;
                 final matchesSearch = i.name.toLowerCase().contains(searchQuery.toLowerCase());
@@ -125,7 +125,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             setState(() {
               isSearching = !isSearching;
               if (!isSearching) {
-                searchQuery = ""; // Clear search when closing
+                searchQuery = "";
               }
             });
           },
@@ -230,7 +230,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-// ... Rest of the original code (SectionHeader, ProductCard, HeroBanner, CartBottomSheet, etc.) remains exactly the same
+
 
 class _SectionHeader extends StatelessWidget {
   final String title;
