@@ -13,6 +13,11 @@ final menuProvider = FutureProvider<List<SatayItem>>((ref) async {
           'https://images.unsplash.com/photo-1529563021893-cc83c992d75d?w=800',
       isAvailable: true,
       tag: 'Popular',
+      sauces: [
+        'Sambal Kacang',
+        'Sambal Kacang Pedas',
+        'Sambal Kicap',
+      ],
     ),
     SatayItem(
       id: '2',
@@ -23,6 +28,11 @@ final menuProvider = FutureProvider<List<SatayItem>>((ref) async {
           'https://images.unsplash.com/photo-1544025162-d76694265947?w=800',
       isAvailable: true,
       tag: 'Bestseller',
+      sauces: [
+        'Sambal Kacang',
+        'Sambal Kacang Pedas',
+        'Sambal Kicap',
+      ],
     ),
     SatayItem(
       id: '3',
@@ -33,6 +43,11 @@ final menuProvider = FutureProvider<List<SatayItem>>((ref) async {
           'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800',
       isAvailable: true,
       tag: 'Hot',
+      sauces: [
+        'Sambal Kacang',
+        'Sambal Kacang Pedas',
+        'Sambal Kicap',
+      ],
     ),
     SatayItem(
       id: '4',
@@ -43,6 +58,11 @@ final menuProvider = FutureProvider<List<SatayItem>>((ref) async {
           'https://images.unsplash.com/photo-1559847844-5315695dadae?w=800',
       isAvailable: true,
       tag: 'Combo',
+      sauces: [
+        'Sambal Kacang',
+        'Sambal Kacang Pedas',
+        'Sambal Kicap',
+      ],
     ),
   ];
 });
