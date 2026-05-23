@@ -1,12 +1,15 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../providers/auth_provider.dart';
 import '../admin/admin_dashboard_screen.dart';
 import '../main_navigation_screen.dart';
 import 'signup_screen.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   final bool adminMode;
 
   const LoginScreen({
@@ -15,10 +18,10 @@ class LoginScreen extends StatefulWidget {
   });
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen>
+class _LoginScreenState extends ConsumerState<LoginScreen>
     with SingleTickerProviderStateMixin {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -35,7 +38,6 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void initState() {
     super.initState();
-
     adminMode = widget.adminMode;
 
     animationController = AnimationController(
@@ -83,9 +85,9 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => isResetting = true);
 
     try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(
-        email: emailController.text.trim(),
-      );
+      await ref
+          .read(authRepositoryProvider)
+          .resetPassword(emailController.text.trim());
 
       if (!mounted) return;
 
@@ -123,22 +125,19 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => isLoading = true);
 
     try {
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
-
-      final uid = credential.user!.uid;
-
-      final userDoc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
-
-      final role = userDoc.data()?['role']?.toString().toLowerCase() ?? 'user';
+      final appUser = await ref.read(authRepositoryProvider).login(
+            emailController.text.trim(),
+            passwordController.text.trim(),
+          );
 
       if (!mounted) return;
 
-      if (adminMode) {
-        if (role == 'admin') {
+      if (appUser == null) {
+        throw Exception("User not found or role not assigned.");
+      }
+
+      if (appUser.role == 'admin') {
+        if (adminMode) {
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
@@ -147,14 +146,7 @@ class _LoginScreenState extends State<LoginScreen>
             (route) => false,
           );
         } else {
-          await FirebaseAuth.instance.signOut();
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("This account is not registered as admin"),
-              backgroundColor: Colors.red,
-            ),
-          );
+          throw Exception("Admin login is not allowed from the user portal.");
         }
       } else {
         Navigator.pushAndRemoveUntil(
@@ -165,12 +157,28 @@ class _LoginScreenState extends State<LoginScreen>
           (route) => false,
         );
       }
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+
+      String message = "Login failed. Please try again.";
+      if (e.code == 'user-not-found' ||
+          e.code == 'wrong-password' ||
+          e.code == 'invalid-credential') {
+        message = "Invalid credentials. Please check your email and password.";
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Login failed: $e"),
+          content: Text("Login failed: ${e.toString()}"),
           backgroundColor: Colors.red,
         ),
       );

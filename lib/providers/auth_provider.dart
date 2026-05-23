@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/app_user.dart';
@@ -28,11 +27,16 @@ class AuthRepository {
 
   AuthRepository(this._ref);
 
-  Future<void> login(String email, String password) async {
-    await _auth.signInWithEmailAndPassword(
+  Future<AppUser?> login(String email, String password) async {
+    final credential = await _auth.signInWithEmailAndPassword(
       email: email.trim(),
       password: password.trim(),
     );
+    final user = credential.user;
+    if (user != null) {
+      return await _ref.read(databaseServiceProvider).getUser(user.uid);
+    }
+    return null;
   }
 
   Future<void> signUp({

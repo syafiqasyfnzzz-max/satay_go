@@ -1,68 +1,69 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'cart_item.dart';
-import 'satay_item.dart';
+import 'package:satay_master_pro/models/cart_item.dart';
 
 class OrderModel {
-  final String orderId;
+  String? orderId;
   final String userId;
+  final String? customerEmail;
   final String customerName;
   final String phone;
+  final String pickupTime;
+  final String paymentMethod;
   final List<CartItem> items;
-  final double totalPrice;
-  final String status; // Pending, Preparing, Ready, Completed
-  final DateTime timestamp;
+  final double subtotal;
+  final double serviceFee;
+  final double grandTotal;
+  final String status;
+  final DateTime? timestamp;
 
   OrderModel({
-    required this.orderId,
+    this.orderId,
     required this.userId,
+    this.customerEmail,
     required this.customerName,
     required this.phone,
+    required this.pickupTime,
+    required this.paymentMethod,
     required this.items,
-    required this.totalPrice,
-    required this.status,
-    required this.timestamp,
+    required this.subtotal,
+    required this.serviceFee,
+    required this.grandTotal,
+    this.status = 'Pending',
+    this.timestamp,
   });
 
   factory OrderModel.fromMap(Map<String, dynamic> map, String id) {
     return OrderModel(
       orderId: id,
       userId: map['userId'] ?? '',
+      customerEmail: map['customerEmail'],
       customerName: map['customerName'] ?? '',
       phone: map['phone'] ?? '',
-      items: (map['items'] as List).map((item) {
-        return CartItem(
-          product: SatayItem(
-            id: '',
-            name: item['name'],
-            category: '',
-            price: (item['price'] as num).toDouble(),
-            imageUrl: '',
-            isAvailable: true,
-            tag: item['tag'] ?? '',
-          ),
-          quantity: item['quantity'],
-        );
-      }).toList(),
-      totalPrice: (map['totalPrice'] as num).toDouble(),
+      pickupTime: map['pickupTime'] ?? '',
+      paymentMethod: map['paymentMethod'] ?? '',
+      items: (map['items'] as List<dynamic>)
+          .map((item) => CartItem.fromMap(item as Map<String, dynamic>))
+          .toList(),
+      subtotal: (map['subtotal'] as num).toDouble(),
+      serviceFee: (map['serviceFee'] as num).toDouble(),
+      grandTotal: (map['grandTotal'] as num).toDouble(),
       status: map['status'] ?? 'Pending',
-      timestamp: (map['timestamp'] as Timestamp).toDate(),
+      timestamp: (map['timestamp'] as Timestamp?)?.toDate(),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'userId': userId,
+      'customerEmail': customerEmail,
       'customerName': customerName,
       'phone': phone,
-      'items': items
-          .map((i) => {
-                'name': i.product.name,
-                'price': i.product.price,
-                'quantity': i.quantity,
-              })
-          .toList(),
-      'totalPrice': totalPrice,
+      'pickupTime': pickupTime,
+      'paymentMethod': paymentMethod,
+      'items': items.map((item) => item.toMap()).toList(),
+      'subtotal': subtotal,
+      'serviceFee': serviceFee,
+      'grandTotal': grandTotal,
       'status': status,
       'timestamp': FieldValue.serverTimestamp(),
     };

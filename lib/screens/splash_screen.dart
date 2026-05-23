@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/auth_provider.dart';
 import 'home/home_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -18,7 +17,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   void _navigateToNext() async {
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 10));
     if (!mounted) return;
     Navigator.pushReplacement(
       context,

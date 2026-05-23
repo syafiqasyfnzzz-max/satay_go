@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:satay_master_pro/widgets/custom_bottom_nav_bar.dart';
 
-import '../providers/auth_provider.dart';
-import 'auth/login_screen.dart';
-import 'cart/cart_screen.dart';
-import 'home/home_screen.dart';
-import 'orders/orders_page.dart'; // Import OrdersPage
-import 'profile/profile_page.dart'; // Import ProfilePage
+import 'package:satay_master_pro/providers/auth_provider.dart';
+import 'package:satay_master_pro/screens/auth/login_screen.dart';
+import 'package:satay_master_pro/screens/cart/cart_screen.dart';
+import 'package:satay_master_pro/screens/home/home_screen.dart';
+import 'package:satay_master_pro/screens/orders/orders_page.dart';
+import 'package:satay_master_pro/screens/profile/profile_page.dart';
 
 class MainNavigationScreen extends ConsumerStatefulWidget {
   const MainNavigationScreen({super.key});
@@ -66,46 +66,15 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
     final pages = [
       const HomeScreen(),
       const CartScreen(),
-      const OrdersPage(), // Use the imported OrdersPage
-      const ProfilePage(), // Use the imported ProfilePage
+      const OrdersPage(),
+      const ProfilePage(),
     ];
 
     return Scaffold(
       body: pages[selectedIndex],
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 20,
-              color: Colors.black.withOpacity(0.08),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-            child: GNav(
-              selectedIndex: selectedIndex,
-              onTabChange: onTabChange,
-              rippleColor: Colors.deepOrange.shade100,
-              hoverColor: Colors.deepOrange.shade50,
-              gap: 8,
-              activeColor: Colors.white,
-              iconSize: 24,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              duration: const Duration(milliseconds: 350),
-              tabBackgroundColor: Colors.deepOrange,
-              color: Colors.grey,
-              tabs: const [
-                GButton(icon: Icons.restaurant_menu, text: 'Menu'),
-                GButton(icon: Icons.shopping_cart, text: 'Cart'),
-                GButton(icon: Icons.receipt_long, text: 'Orders'),
-                GButton(icon: Icons.person, text: 'Profile'),
-              ],
-            ),
-          ),
-        ),
+      bottomNavigationBar: CustomBottomNavBar(
+        selectedIndex: selectedIndex,
+        onTabChange: onTabChange,
       ),
     );
   }

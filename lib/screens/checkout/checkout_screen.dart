@@ -1,12 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:satay_master_pro/providers/order_provider.dart';
 import 'package:satay_master_pro/screens/checkout/order_summary_section.dart';
 import 'package:satay_master_pro/screens/checkout/payment_method_selection.dart';
 import 'package:satay_master_pro/screens/checkout/pickup_details_form.dart';
-
-import '../../providers/cart_provider.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -21,7 +18,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final pickupTimeController = TextEditingController();
 
   String? selectedPaymentMethod;
-  bool isLoading = false;
+  bool _isPaymentLoading = false;
   bool _hasPaid = false;
 
   @override
@@ -40,104 +37,78 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       return;
     }
 
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => _isPaymentLoading = true);
 
     await Future.delayed(
         const Duration(seconds: 2)); // Simulate payment processing
 
     if (!mounted) return;
 
+    bool paymentConfirmed = false;
     if (selectedPaymentMethod == "Online Banking") {
-      await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Online Banking Redirection"),
-          content: const Text(
-              "Simulating redirection to an online banking portal. Please confirm payment."),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
-              child: const Text("Cancel"),
+      paymentConfirmed = await showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text("Online Banking Redirection"),
+              content: const Text(
+                  "Simulating redirection to an online banking portal. Please confirm payment."),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text("Confirm Payment"),
+                ),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context, true);
-              },
-              child: const Text("Confirm Payment"),
-            ),
-          ],
-        ),
-      ).then((value) {
-        if (value == true) {
-          setState(() {
-            _hasPaid = true;
-          });
-        }
-      });
+          ) ??
+          false;
     } else if (selectedPaymentMethod == "QR Pay") {
-      await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("QR Pay"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                  "Please scan the QR code below to complete your payment."),
-              const SizedBox(height: 16),
-              Image.network(
-                'https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_many_purposes.svg', // Dummy QR code image
-                height: 150,
-                width: 150,
+      paymentConfirmed = await showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text("QR Pay"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                      "Please scan the QR code below to complete your payment."),
+                  const SizedBox(height: 16),
+                  Image.network(
+                    'https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_many_purposes.svg', // Dummy QR code image
+                    height: 150,
+                    width: 150,
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
-              const SizedBox(height: 16),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
-              child: const Text("Cancel"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text("I have paid"),
+                ),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context, true);
-              },
-              child: const Text("I have paid"),
-            ),
-          ],
-        ),
-      ).then((value) {
-        if (value == true) {
-          setState(() {
-            _hasPaid = true;
-          });
-        }
+          ) ??
+          false;
+    }
+
+    if (paymentConfirmed) {
+      setState(() {
+        _hasPaid = true;
       });
     }
 
-    setState(() {
-      isLoading = false;
-    });
+    setState(() => _isPaymentLoading = false);
   }
 
-  Future<void> placeOrder() async {
-    final user = FirebaseAuth.instance.currentUser;
-    final cartItems = ref.read(cartProvider);
-    final cartNotifier = ref.read(cartProvider.notifier);
-
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please login first")),
-      );
-      return;
-    }
-
+  Future<void> _placeOrder() async {
     if (nameController.text.trim().isEmpty ||
         phoneController.text.trim().isEmpty ||
         pickupTimeController.text.trim().isEmpty) {
@@ -154,45 +125,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       return;
     }
 
-    if (cartItems.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Your cart is empty")),
-      );
-      return;
-    }
-
-    setState(() => isLoading = true);
-
     try {
-      final subtotal = cartNotifier.subtotal;
-      final serviceFee = subtotal * 0.10;
-      final grandTotal = subtotal + serviceFee;
-
-      await FirebaseFirestore.instance.collection('orders').add({
-        'userId': user.uid,
-        'customerEmail': user.email,
-        'customerName': nameController.text.trim(),
-        'phone': phoneController.text.trim(),
-        'pickupTime': pickupTimeController.text.trim(),
-        'paymentMethod': selectedPaymentMethod,
-        'items': cartItems.map((item) {
-          return {
-            'itemId': item.product.id,
-            'name': item.product.name,
-            'sets': item.quantity,
-            'sticks': item.totalSticks,
-            'pricePerSet': item.product.price,
-            'totalPrice': item.totalPrice,
-          };
-        }).toList(),
-        'subtotal': subtotal,
-        'serviceFee': serviceFee,
-        'grandTotal': grandTotal,
-        'status': 'Pending',
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-
-      ref.read(cartProvider.notifier).clear();
+      await ref.read(checkoutNotifierProvider.notifier).placeOrder(
+            customerName: nameController.text.trim(),
+            phone: phoneController.text.trim(),
+            pickupTime: pickupTimeController.text.trim(),
+            paymentMethod: selectedPaymentMethod!,
+          );
 
       if (!mounted) return;
 
@@ -214,19 +153,25 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to place order: $e")),
+        SnackBar(content: Text("Failed to place order: ${e.toString()}")),
       );
-    } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final checkoutState = ref.watch(checkoutNotifierProvider);
+    final isLoading = checkoutState.isLoading || _isPaymentLoading;
+
+    ref.listen<CheckoutState>(checkoutNotifierProvider, (_, state) {
+      if (state.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(state.errorMessage!)),
+        );
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Checkout"),
@@ -267,7 +212,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ),
                 onPressed: isLoading || selectedPaymentMethod == null
                     ? null
-                    : (_hasPaid ? placeOrder : _handlePayment),
+                    : (_hasPaid ? _placeOrder : _handlePayment),
                 child: isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : Text(_hasPaid ? "PLACE ORDER" : "PROCEED TO PAYMENT"),

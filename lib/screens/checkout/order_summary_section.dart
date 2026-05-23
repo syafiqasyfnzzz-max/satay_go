@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../providers/cart_provider.dart';
+import 'package:satay_master_pro/providers/cart_provider.dart';
 
 class OrderSummarySection extends ConsumerWidget {
   const OrderSummarySection({super.key});

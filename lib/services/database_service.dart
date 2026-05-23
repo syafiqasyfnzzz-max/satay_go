@@ -16,7 +16,10 @@ class DatabaseService {
 
   Future<void> saveUser(AppUser user) async {
     try {
-      await _db.collection('users').doc(user.uid).set(user.toMap());
+      await _db
+          .collection('users')
+          .doc(user.uid)
+          .set(user.toMap(), SetOptions(merge: true));
     } catch (e) {
       debugPrint("Database Error: $e");
     }
