@@ -75,9 +75,12 @@ class CheckoutNotifier extends legacy.StateNotifier<CheckoutState> {
 
     try {
       final cartNotifier = _ref.read(cartProvider.notifier);
+
       final subtotal = cartNotifier.subtotal;
-      final serviceFee = subtotal * 0.10;
-      final grandTotal = subtotal + serviceFee;
+
+      // NO SERVICE FEE
+     final serviceFee = 0.0;
+     final grandTotal = subtotal;
 
       final order = OrderModel(
         userId: user.uid,
@@ -96,10 +99,7 @@ class CheckoutNotifier extends legacy.StateNotifier<CheckoutState> {
 
       _ref.read(cartProvider.notifier).clear();
 
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: null,
-      );
+      state = state.copyWith(isLoading: false, errorMessage: null);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,

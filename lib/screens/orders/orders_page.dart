@@ -1,4 +1,4 @@
-// ignore_for_file: unused_local_variable, deprecated_member_use
+// ignore_for_file: deprecated_member_use
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,6 +17,8 @@ class OrdersPage extends StatelessWidget {
         return Colors.green;
       case "Completed":
         return Colors.grey;
+      case "Cancelled":
+        return Colors.red;
       default:
         return Colors.deepOrange;
     }
@@ -73,8 +75,12 @@ class OrdersPage extends StatelessWidget {
                     final data = doc.data();
 
                     final status = data['status'] ?? 'Pending';
-                    final grandTotal = data['grandTotal'] ?? 0.0;
-                    final address = data['address'] ?? '-';
+                    final grandTotal =
+                        ((data['grandTotal'] ?? 0) as num).toDouble();
+
+                    final subtotal =
+                        ((data['subtotal'] ?? grandTotal) as num).toDouble();
+
                     final items = data['items'] as List<dynamic>? ?? [];
 
                     return Container(
@@ -129,42 +135,139 @@ class OrdersPage extends StatelessWidget {
                               ),
                             ],
                           ),
+
                           const SizedBox(height: 12),
                           Text("Pickup Time: ${data['pickupTime'] ?? '-'}"),
-                          const Divider(height: 28),
-                          const Text(
-                            "Items",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 8),
-                          ...items.map((item) {
-                            final name = item['name'] ?? 'Item';
-                            final sets = item['sets'] ?? 0;
-                            final sticks = item['sticks'] ?? 0;
-                            final totalPrice = item['totalPrice'] ?? 0.0;
 
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                          const Divider(height: 28),
+
+                          const Text(
+                            "Order Details",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16,
+                            ),
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          ...items.map((rawItem) {
+                            final item =
+                                rawItem as Map<String, dynamic>? ?? {};
+
+                            final name = item['name'] ?? 'Item';
+
+                            final quantity =
+                                ((item['quantity'] ?? item['sets'] ?? 1)
+                                        as num)
+                                    .toInt();
+
+                            final safeQuantity =
+                                quantity <= 0 ? 1 : quantity;
+
+                            final sticks =
+                                ((item['totalSticks'] ??
+                                            item['sticks'] ??
+                                            safeQuantity * 10)
+                                        as num)
+                                    .toInt();
+
+                            final safeSticks =
+                                sticks <= 0 ? safeQuantity * 10 : sticks;
+
+                            final pricePerSet =
+                                ((item['pricePerSet'] ?? 0) as num).toDouble();
+
+                            final totalPrice =
+                                ((item['totalPrice'] ?? 0) as num).toDouble();
+
+                            final sauces = item['selectedSauces'] is List
+                                ? List<String>.from(item['selectedSauces'])
+                                : <String>[];
+
+                            final extraSambal = item['extraSambal'] == true;
+
+                            final extraSambalPrice =
+                                ((item['extraSambalPrice'] ?? 0) as num)
+                                    .toDouble();
+
+                            return Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFF7F2),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.deepOrange.withOpacity(0.12),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: Text(
-                                      "$name • $sets set ($sticks sticks)",
+                                  Text(
+                                    name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 15,
                                     ),
                                   ),
+                                  const SizedBox(height: 6),
                                   Text(
-                                    "RM ${(totalPrice as num).toDouble().toStringAsFixed(2)}",
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                    "Quantity: $safeQuantity set",
+                                  ),
+                                  Text(
+                                    "Total sticks: $safeSticks sticks",
+                                  ),
+                                  if (pricePerSet > 0)
+                                    Text(
+                                      "Price per set: RM ${pricePerSet.toStringAsFixed(2)}",
+                                    ),
+                                  if (sauces.isNotEmpty)
+                                    Text(
+                                      "Sauce: ${sauces.join(', ')}",
+                                    ),
+                                  Text(
+                                    extraSambal
+                                        ? "Extra sambal: Yes (+RM ${extraSambalPrice.toStringAsFixed(2)})"
+                                        : "Extra sambal: No",
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      "Item total: RM ${totalPrice.toStringAsFixed(2)}",
+                                      style: const TextStyle(
+                                        color: Colors.deepOrange,
+                                        fontWeight: FontWeight.w900,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
                             );
                           }),
+
                           const Divider(height: 28),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "Subtotal",
+                                style: TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                              Text(
+                                "RM ${subtotal.toStringAsFixed(2)}",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 8),
+
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -172,18 +275,22 @@ class OrdersPage extends StatelessWidget {
                                 "Grand Total",
                                 style: TextStyle(
                                   fontWeight: FontWeight.w900,
+                                  fontSize: 16,
                                 ),
                               ),
                               Text(
-                                "RM ${(grandTotal as num).toDouble().toStringAsFixed(2)}",
+                                "RM ${grandTotal.toStringAsFixed(2)}",
                                 style: const TextStyle(
                                   color: Colors.deepOrange,
                                   fontWeight: FontWeight.w900,
+                                  fontSize: 16,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+
+                          const SizedBox(height: 10),
+
                           Text(
                             "Payment Method: ${data['paymentMethod'] ?? '-'}",
                             style: const TextStyle(fontWeight: FontWeight.w500),

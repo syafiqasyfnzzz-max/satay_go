@@ -20,27 +20,59 @@ class SatayItem {
     required this.imageUrl,
     required this.isAvailable,
     required this.tag,
-    this.sauces = const ['Sambal Kacang'],
+    this.sauces = const [
+      'Sambal Kacang',
+      'Sambal Kacang Pedas',
+      'Sambal Kicap',
+      'Tiada Sambal',
+    ],
     this.maxSauceSelection = 2,
     this.extraSambalAvailable = false,
     this.extraSambalPrice = 0.0,
   });
 
   factory SatayItem.fromMap(String id, Map<String, dynamic> data) {
+    final rawSauces = data['sauces'];
+
+    List<String> sauceList = [
+      'Sambal Kacang',
+      'Sambal Kacang Pedas',
+      'Sambal Kicap',
+    ];
+
+    if (rawSauces is List && rawSauces.isNotEmpty) {
+      sauceList = rawSauces.map((e) => e.toString()).toList();
+    }
+
     return SatayItem(
       id: id,
-      name: data['name'] ?? '',
-      category: data['category'] ?? '',
+      name: data['name']?.toString() ?? '',
+      category: data['category']?.toString() ?? '',
       price: ((data['price'] ?? 0) as num).toDouble(),
-      imageUrl: data['imageUrl'] ?? '',
+      imageUrl: data['imageUrl']?.toString() ?? '',
       isAvailable: data['isAvailable'] ?? true,
-      tag: data['tag'] ?? '',
-      sauces: data['sauces'] is List
-          ? List<String>.from(data['sauces'])
-          : ['Sambal Kacang'],
-      maxSauceSelection: data['maxSauceSelection'] ?? 2,
+      tag: data['tag']?.toString() ?? '',
+      sauces: sauceList,
+      maxSauceSelection: data['maxSauceSelection'] is int
+          ? data['maxSauceSelection']
+          : 2,
       extraSambalAvailable: data['extraSambalAvailable'] ?? false,
       extraSambalPrice: ((data['extraSambalPrice'] ?? 0) as num).toDouble(),
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'category': category,
+      'price': price,
+      'imageUrl': imageUrl,
+      'isAvailable': isAvailable,
+      'tag': tag,
+      'sauces': sauces,
+      'maxSauceSelection': maxSauceSelection,
+      'extraSambalAvailable': extraSambalAvailable,
+      'extraSambalPrice': extraSambalPrice,
+    };
   }
 }

@@ -12,8 +12,8 @@ class OrderSummarySection extends ConsumerWidget {
     final cartNotifier = ref.read(cartProvider.notifier);
 
     final subtotal = cartNotifier.subtotal;
-    final serviceFee = subtotal * 0.10;
-    final grandTotal = subtotal + serviceFee;
+    final serviceFee = 0.0;
+    final grandTotal = subtotal;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,7 +47,7 @@ class OrderSummarySection extends ConsumerWidget {
         ),
         const Divider(height: 32),
         _priceRow("Subtotal", subtotal),
-        _priceRow("Service Fee (10%)", serviceFee),
+        _priceRow("Service Fee (0%)", serviceFee),
         _priceRow("Grand Total", grandTotal, isBold: true),
       ],
     );

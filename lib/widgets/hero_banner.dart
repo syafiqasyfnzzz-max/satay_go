@@ -14,25 +14,32 @@ class _HeroBannerState extends State<HeroBanner>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
+  static const String bannerUrl =
+      'https://images.unsplash.com/photo-1529563021893-cc83c992d75d?w=1400';
+
   @override
   void initState() {
     super.initState();
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    _fadeAnimation =
-        CurvedAnimation(parent: _controller, curve: Curves.easeIn);
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
-    // Start the animation after a short delay
-    Timer(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        _controller.forward();
-      }
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.25),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+
+    Timer(const Duration(milliseconds: 300), () {
+      if (mounted) _controller.forward();
     });
   }
 
@@ -45,107 +52,112 @@ class _HeroBannerState extends State<HeroBanner>
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(16),
-      height: 250,
+      margin: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+      height: 210,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(26),
         boxShadow: [
           BoxShadow(
-            color: Colors.deepOrange.withAlpha(100),
-            blurRadius: 30,
-            offset: const Offset(0, 15),
+            color: Colors.deepOrange.withValues(alpha: 0.20),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
         ],
-        // TODO: Replace with a high-quality image of satay
-        // For example:
-        // image: const DecorationImage(
-        //   image: AssetImage('assets/images/satay_banner.jpg'),
-        //   fit: BoxFit.cover,
-        // ),
-         color: const Color(0xFFF5EFE6), // Soft brown/cream placeholder
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(26),
-        child: Stack(
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(
-                    'https://images.unsplash.com/photo-1529563021893-cc83c992d75d?w=1200',
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.network(
+            bannerUrl,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, progress) {
+              if (progress == null) return child;
+
+              return Container(
+                color: const Color(0xFFFFF3E0),
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.deepOrange,
+                    strokeWidth: 2,
                   ),
-                  fit: BoxFit.cover,
                 ),
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withAlpha((255 * 0.7).round()),
-                    Colors.transparent,
-                    Colors.black.withAlpha((255 * 0.3).round()),
-                  ],
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
+              );
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color(0xFFE64A19),
+                      Color(0xFFFF7043),
+                    ],
+                  ),
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: const Text(
-                        "SatayGo 🔥",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.w900,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 10.0,
-                              color: Colors.black54,
-                              offset: Offset(2.0, 2.0),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: const Text(
-                        "Freshly grilled, delivered to you.",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 8.0,
-                              color: Colors.black54,
-                              offset: Offset(2.0, 2.0),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+              );
+            },
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.black.withValues(alpha: 0.15),
+                  Colors.black.withValues(alpha: 0.82),
                 ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
             ),
-          ],
-        ),
+          ),
+          Positioned(
+            left: 28,
+            right: 24,
+            bottom: 30,
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "SatayGo 🔥",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 34,
+                        fontWeight: FontWeight.w900,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 12,
+                            color: Colors.black54,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "Freshly grilled, prepared for pickup.",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 8,
+                            color: Colors.black54,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
-

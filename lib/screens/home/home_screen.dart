@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -38,6 +40,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         slivers: [
           _buildAppBar(context, ref),
           const SliverToBoxAdapter(child: HeroBanner()),
+
           SliverPersistentHeader(
             pinned: true,
             delegate: CategoryHeaderDelegate(
@@ -49,7 +52,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ),
+
           const SectionHeader(title: "Freshly Grilled for You 🔥"),
+
           menuAsync.when(
             data: (items) {
               final filteredItems = items.where((i) {
@@ -79,22 +84,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               return SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                sliver: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    mainAxisExtent: 340,
-                  ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      return FadeInWidget(
-                        delay: Duration(milliseconds: 100 * (index % 10)),
-                        child: ProductCard(item: filteredItems[index]),
-                      );
-                    },
-                    childCount: filteredItems.length,
-                  ),
+                sliver: SliverLayoutBuilder(
+                  builder: (context, constraints) {
+                    final crossAxisCount =
+                        constraints.crossAxisExtent < 700 ? 2 : 3;
+
+                    return SliverGrid(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                        mainAxisExtent: 365,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          return FadeInWidget(
+                            delay: Duration(milliseconds: 100 * (index % 10)),
+                            child: ProductCard(item: filteredItems[index]),
+                          );
+                        },
+                        childCount: filteredItems.length,
+                      ),
+                    );
+                  },
                 ),
               );
             },
@@ -105,7 +117,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Center(child: Text("Error loading menu: $e")),
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 120)),
+
+          const SliverToBoxAdapter(child: SizedBox(height: 130)),
         ],
       ),
       floatingActionButton: cart.isNotEmpty
