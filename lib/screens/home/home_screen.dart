@@ -8,8 +8,12 @@ import 'package:satay_master_pro/screens/auth/login_screen.dart';
 import 'package:satay_master_pro/widgets/cart_bottom_sheet.dart';
 import 'package:satay_master_pro/widgets/category_header.dart';
 import 'package:satay_master_pro/widgets/hero_banner.dart';
+import 'package:satay_master_pro/widgets/animated/fade_in_widget.dart';
 import 'package:satay_master_pro/widgets/product_card.dart';
 import 'package:satay_master_pro/widgets/section_header.dart';
+import 'package:satay_master_pro/widgets/animated/loading_widget.dart';
+import 'package:satay_master_pro/widgets/empty_state_widget.dart';
+import 'package:satay_master_pro/widgets/cart_badge.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -65,11 +69,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 return const SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.all(30),
-                    child: Center(
-                      child: Text(
-                        "No menu found.",
-                        style: TextStyle(fontSize: 16),
-                      ),
+                    child: EmptyStateWidget(
+                      message: "No menu found.",
+                      icon: Icons.fastfood,
                     ),
                   ),
                 );
@@ -82,11 +84,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     crossAxisCount: 2,
                     mainAxisSpacing: 16,
                     crossAxisSpacing: 16,
-                    mainAxisExtent: 450,
+                    mainAxisExtent: 340,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                      return ProductCard(item: filteredItems[index]);
+                      return FadeInWidget(
+                        delay: Duration(milliseconds: 100 * (index % 10)),
+                        child: ProductCard(item: filteredItems[index]),
+                      );
                     },
                     childCount: filteredItems.length,
                   ),
@@ -94,9 +99,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               );
             },
             loading: () => const SliverFillRemaining(
-              child: Center(
-                child: CircularProgressIndicator(color: Colors.deepOrange),
-              ),
+              child: LoadingWidget(),
             ),
             error: (e, _) => SliverToBoxAdapter(
               child: Center(child: Text("Error loading menu: $e")),
@@ -106,15 +109,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       floatingActionButton: cart.isNotEmpty
-          ? FloatingActionButton.extended(
-              backgroundColor: Colors.deepOrange,
+          ? FloatingActionButton(
               onPressed: () => _showCartSheet(context),
-              label: Text(
-                "View Cart (${cart.length}) • RM ${ref.read(cartProvider.notifier).subtotal.toStringAsFixed(2)}",
-              ),
-              icon: const Icon(
-                Icons.shopping_bag_outlined,
-                color: Colors.white,
+              backgroundColor: Colors.deepOrange,
+              child: CartBadge(
+                child: const Icon(
+                  Icons.shopping_bag_outlined,
+                  color: Colors.white,
+                ),
               ),
             )
           : null,

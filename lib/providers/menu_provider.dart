@@ -55,7 +55,7 @@ final menuProvider = FutureProvider<List<SatayItem>>((ref) async {
       category: 'Combo',
       price: 45.00,
       imageUrl:
-          'https://images.unsplash.com/photo-1559847844-5315695dadae?w=800',
+          'https://images.unsplash.com/photo-1529563021893-cc83c992d75d?w=1200',
       isAvailable: true,
       tag: 'Combo',
       sauces: [

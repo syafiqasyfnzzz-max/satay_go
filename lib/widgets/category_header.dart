@@ -13,64 +13,74 @@ class CategoryHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final categories = [
-      {"label": "All", "emoji": "🔥", "width": 110.0},
-      {"label": "Chicken", "emoji": "🐔", "width": 160.0},
-      {"label": "Beef", "emoji": "🥩", "width": 130.0},
-      {"label": "Lamb", "emoji": "🐑", "width": 130.0},
-      {"label": "Combo", "emoji": "🍱", "width": 145.0},
+      "All",
+      "Chicken",
+      "Beef",
+      "Lamb",
+      "Combo",
     ];
 
-    return SizedBox(
-      height: 72,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 10,
+    return Container(
+      height: 60,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFAFAFA),
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey.shade200,
+            width: 1,
+          ),
         ),
+      ),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
-          final label = categories[index]["label"] as String;
-          final emoji = categories[index]["emoji"] as String;
-          final width = categories[index]["width"] as double;
+          final category = categories[index];
+          final isSelected = selectedCategory == category;
 
-          final isSelected = selectedCategory == label;
-
-          return SizedBox(
-            width: width,
-            height: 52,
-            child: ChoiceChip(
-              selected: isSelected,
-              selectedColor: Colors.deepOrange,
-              backgroundColor: Colors.white,
-              showCheckmark: false,
-              labelPadding: EdgeInsets.zero,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-                side: BorderSide(
-                  color: isSelected
-                      ? Colors.deepOrange
-                      : Colors.orange.shade100,
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: GestureDetector(
+              onTap: () => onCategorySelected(category),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.deepOrange : Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(
+                    color: isSelected ? Colors.deepOrange.shade700 : Colors.grey.shade300,
+                    width: 1.5,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: Colors.deepOrange.withAlpha((255 * 0.5).round()),
+                            blurRadius: 15,
+                            spreadRadius: -5,
+                            offset: const Offset(0, 5),
+                          )
+                        ]
+                      : [
+                          BoxShadow(
+                            color: Colors.grey.withAlpha((255 * 0.1).round()),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          )
+                        ],
                 ),
-              ),
-              label: Center(
-                child: Text(
-                  "$emoji  $label",
-                  maxLines: 1,
-                  overflow: TextOverflow.visible,
-                  softWrap: false,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color:
-                        isSelected ? Colors.white : Colors.black87,
+                child: Center(
+                  child: Text(
+                    category,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: isSelected ? Colors.white : Colors.black87,
+                    ),
                   ),
                 ),
               ),
-              onSelected: (_) {
-                onCategorySelected(label);
-              },
             ),
           );
         },
@@ -87,10 +97,10 @@ class CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  double get minExtent => 72;
+  double get minExtent => 60;
 
   @override
-  double get maxExtent => 72;
+  double get maxExtent => 60;
 
   @override
   Widget build(

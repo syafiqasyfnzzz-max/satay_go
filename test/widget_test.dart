@@ -6,7 +6,7 @@ void main() {
   testWidgets('SatayGo smoke test', (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
-        child: SatayGoApp(),
+        child: SatayGoApp(onboardingCompleted: true),
       ),
     );
 

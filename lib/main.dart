@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:satay_master_pro/providers/auth_provider.dart';
-import 'package:satay_master_pro/screens/splash_screen.dart';
+import 'package:satay_master_pro/screens/onboarding/onboarding_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_options.dart';
 import 'screens/admin/admin_dashboard_screen.dart';
@@ -16,15 +17,20 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  final prefs = await SharedPreferences.getInstance();
+  final bool onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+
   runApp(
-    const ProviderScope(
-      child: SatayGoApp(),
+    ProviderScope(
+      child: SatayGoApp(onboardingCompleted: onboardingCompleted),
     ),
   );
 }
 
 class SatayGoApp extends StatelessWidget {
-  const SatayGoApp({super.key});
+  final bool onboardingCompleted;
+
+  const SatayGoApp({super.key, required this.onboardingCompleted});
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +46,7 @@ class SatayGoApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: const Color(0xFFFAFAFA),
       ),
-      home: const RoleGate(),
+      home: onboardingCompleted ? const RoleGate() : const OnboardingScreen(),
     );
   }
 }
@@ -66,7 +72,11 @@ class RoleGate extends ConsumerWidget {
             }
             return const MainNavigationScreen();
           },
-          loading: () => const SplashScreen(),
+          loading: () => const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          ),
           error: (err, stack) => const Scaffold(
             body: Center(
               child: Text('Error loading user profile'),
@@ -74,7 +84,11 @@ class RoleGate extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const SplashScreen(),
+      loading: () => const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
       error: (err, stack) => const Scaffold(
         body: Center(
           child: Text('Something went wrong'),
