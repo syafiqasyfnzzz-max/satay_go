@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_literals_to_create_immutables, deprecated_member_use, prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';

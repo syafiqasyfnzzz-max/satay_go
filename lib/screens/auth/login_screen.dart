@@ -23,6 +23,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen>
     with SingleTickerProviderStateMixin {
+  final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -114,11 +115,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   Future<void> loginUser() async {
-    if (emailController.text.trim().isEmpty ||
-        passwordController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter email and password")),
-      );
+    // Use the Form key to validate
+    final isValid = _formKey.currentState?.validate() ?? false;
+    if (!isValid) {
       return;
     }
 
@@ -303,16 +302,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                       ),
                     ],
                   ),
+                 child: Form(
+                  key: _formKey,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        adminMode ? "Admin Credentials" : "Login Details",
-                        style: const TextStyle(
-                          fontSize: 19,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                 children: [
+                Text(
+        adminMode ? "Admin Credentials" : "Login Details",
+        style: const TextStyle(
+          fontSize: 19,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
                       const SizedBox(height: 6),
                       Text(
                         adminMode
@@ -323,8 +324,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         ),
                       ),
                       const SizedBox(height: 22),
-                      TextField(
+                      TextFormField(
                         controller: emailController,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter your email';
+                          }
+                          return null;
+                        },
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
                           labelText: "Email",
@@ -353,8 +360,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         ),
                       ),
                       const SizedBox(height: 18),
-                      TextField(
+                      TextFormField(
                         controller: passwordController,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          return null;
+                        },
                         obscureText: obscurePassword,
                         decoration: InputDecoration(
                           labelText: "Password",
@@ -468,13 +481,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      adminMode = !adminMode;
-                    });
-                  },
+              ),
+              const SizedBox(height: 20),
+              OutlinedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    adminMode = !adminMode;
+                  });
+                },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.deepOrange,
                     side: BorderSide(color: Colors.orange.shade200),
