@@ -68,7 +68,7 @@ class RoleGate extends ConsumerWidget {
         return userProfile.when(
           data: (appUser) {
             if (appUser?.role == 'admin') {
-              return const AdminDashboardScreen();
+             return AdminDashboardScreen();
             }
             return const MainNavigationScreen();
           },

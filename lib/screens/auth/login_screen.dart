@@ -140,7 +140,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-              builder: (_) => const AdminDashboardScreen(),
+             builder: (_) => AdminDashboardScreen(),
             ),
             (route) => false,
           );
